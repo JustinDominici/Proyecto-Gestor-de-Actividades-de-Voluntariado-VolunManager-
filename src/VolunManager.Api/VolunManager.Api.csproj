@@ -24,6 +24,7 @@
   <ItemGroup>
     <ProjectReference Include="..\VolunManager.Domain\VolunManager.Domain.csproj" />
     <ProjectReference Include="..\VolunManager.Infrastructure\VolunManager.Infrastructure.csproj" />
+    <ProjectReference Include="..\VolunManager.Application\VolunManager.Application.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/VolunManager.Api/VolunManager.Api.csproj" />
+    <Project Path="src/VolunManager.Application/VolunManager.Application.csproj" />
     <Project Path="src/VolunManager.Domain/VolunManager.Domain.csproj" />
     <Project Path="src/VolunManager.Infrastructure/VolunManager.Infrastructure.csproj" />
   </Folder>

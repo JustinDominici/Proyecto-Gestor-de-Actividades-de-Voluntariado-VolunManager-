@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using VolunManager.Infrastructure.Interfaces;
-using VolunManager.Infrastructure.Models;
+using VolunManager.Application.Contract;
+using VolunManager.Application.Dtos.Jornadas;
 
 namespace VolunManager.Api.Controllers
 {
@@ -8,80 +8,76 @@ namespace VolunManager.Api.Controllers
     [Route("api/[controller]")]
     public class JornadasController : ControllerBase
     {
-        private readonly IJornadaRepository _jornadaRepository;
+        private readonly IJornadaService _jornadaService;
 
-        public JornadasController(IJornadaRepository jornadaRepository)
+        public JornadasController(IJornadaService jornadaService)
         {
-            _jornadaRepository = jornadaRepository;
+            _jornadaService = jornadaService;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<JornadaDto>>> GetJornadas()
+        public async Task<IActionResult> GetJornadas()
         {
-            var jornadas = await _jornadaRepository.GetAllAsync();
+            var result = await _jornadaService.GetAllAsync();
 
-            return Ok(jornadas);
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
+
+            return Ok(result);
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<JornadaDto>> GetJornada(int id)
+        public async Task<IActionResult> GetJornada(int id)
         {
-            var jornada = await _jornadaRepository.GetByIdAsync(id);
+            var result = await _jornadaService.GetByIdAsync(id);
 
-            if (jornada == null)
+            if (!result.Success)
             {
-                return NotFound($"No se encontró una jornada con el ID {id}.");
+                return NotFound(result);
             }
 
-            return Ok(jornada);
+            return Ok(result);
         }
 
         [HttpPost]
-        public async Task<ActionResult<JornadaDto>> CrearJornada(JornadaCreateDto jornadaCreateDto)
+        public async Task<IActionResult> CrearJornada(JornadaCreateDto jornadaCreateDto)
         {
-            try
-            {
-                var jornada = await _jornadaRepository.CreateAsync(jornadaCreateDto);
+            var result = await _jornadaService.CreateAsync(jornadaCreateDto);
 
-                return CreatedAtAction(nameof(GetJornada), new { id = jornada.Id }, jornada);
-            }
-            catch (Exception ex)
+            if (!result.Success)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(result);
             }
+
+            return Ok(result);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> ActualizarJornada(int id, JornadaUpdateDto jornadaUpdateDto)
         {
-            try
-            {
-                var actualizado = await _jornadaRepository.UpdateAsync(id, jornadaUpdateDto);
+            var result = await _jornadaService.UpdateAsync(id, jornadaUpdateDto);
 
-                if (!actualizado)
-                {
-                    return NotFound($"No se encontró una jornada con el ID {id}.");
-                }
-
-                return NoContent();
-            }
-            catch (Exception ex)
+            if (!result.Success)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(result);
             }
+
+            return Ok(result);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> EliminarJornada(int id)
         {
-            var eliminado = await _jornadaRepository.DeleteAsync(id);
+            var result = await _jornadaService.DeleteAsync(id);
 
-            if (!eliminado)
+            if (!result.Success)
             {
-                return NotFound($"No se encontró una jornada con el ID {id}.");
+                return NotFound(result);
             }
 
-            return NoContent();
+            return Ok(result);
         }
     }
 }
