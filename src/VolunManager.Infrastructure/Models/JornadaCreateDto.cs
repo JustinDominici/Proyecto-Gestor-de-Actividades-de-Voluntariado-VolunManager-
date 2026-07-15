@@ -1,4 +1,4 @@
-﻿namespace VolunManager.Api.DTOs.Jornadas
+﻿namespace VolunManager.Infrastructure.Models
 {
     public class JornadaCreateDto
     {

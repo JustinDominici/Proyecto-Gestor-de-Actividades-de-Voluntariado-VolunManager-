@@ -1,4 +1,4 @@
-﻿namespace VolunManager.Api.DTOs.Voluntarios
+﻿namespace VolunManager.Infrastructure.Models
 {
     public class VoluntarioUpdateDto
     {

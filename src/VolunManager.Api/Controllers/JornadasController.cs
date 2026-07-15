@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using VolunManager.Api.Context;
-using VolunManager.Api.DTOs.Jornadas;
-using VolunManager.Api.Models;
+using VolunManager.Infrastructure.Interfaces;
+using VolunManager.Infrastructure.Models;
 
 namespace VolunManager.Api.Controllers
 {
@@ -10,32 +8,17 @@ namespace VolunManager.Api.Controllers
     [Route("api/[controller]")]
     public class JornadasController : ControllerBase
     {
-        private readonly VolunManagerContext _context;
+        private readonly IJornadaRepository _jornadaRepository;
 
-        public JornadasController(VolunManagerContext context)
+        public JornadasController(IJornadaRepository jornadaRepository)
         {
-            _context = context;
+            _jornadaRepository = jornadaRepository;
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<JornadaDto>>> GetJornadas()
         {
-            var jornadas = await _context.Jornadas
-                .Include(j => j.Voluntario)
-                .Select(j => new JornadaDto
-                {
-                    Id = j.Id,
-                    Titulo = j.Titulo,
-                    Descripcion = j.Descripcion,
-                    Fecha = j.Fecha,
-                    Lugar = j.Lugar,
-                    HorasEstimadas = j.HorasEstimadas,
-                    VoluntarioId = j.VoluntarioId,
-                    NombreVoluntario = j.Voluntario != null
-                        ? j.Voluntario.Nombre + " " + j.Voluntario.Apellido
-                        : null
-                })
-                .ToListAsync();
+            var jornadas = await _jornadaRepository.GetAllAsync();
 
             return Ok(jornadas);
         }
@@ -43,23 +26,7 @@ namespace VolunManager.Api.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<JornadaDto>> GetJornada(int id)
         {
-            var jornada = await _context.Jornadas
-                .Include(j => j.Voluntario)
-                .Where(j => j.Id == id)
-                .Select(j => new JornadaDto
-                {
-                    Id = j.Id,
-                    Titulo = j.Titulo,
-                    Descripcion = j.Descripcion,
-                    Fecha = j.Fecha,
-                    Lugar = j.Lugar,
-                    HorasEstimadas = j.HorasEstimadas,
-                    VoluntarioId = j.VoluntarioId,
-                    NombreVoluntario = j.Voluntario != null
-                        ? j.Voluntario.Nombre + " " + j.Voluntario.Apellido
-                        : null
-                })
-                .FirstOrDefaultAsync();
+            var jornada = await _jornadaRepository.GetByIdAsync(id);
 
             if (jornada == null)
             {
@@ -72,90 +39,47 @@ namespace VolunManager.Api.Controllers
         [HttpPost]
         public async Task<ActionResult<JornadaDto>> CrearJornada(JornadaCreateDto jornadaCreateDto)
         {
-            var voluntarioExiste = await _context.Voluntarios
-                .AnyAsync(v => v.Id == jornadaCreateDto.VoluntarioId);
-
-            if (!voluntarioExiste)
+            try
             {
-                return BadRequest($"No existe un voluntario con el ID {jornadaCreateDto.VoluntarioId}.");
+                var jornada = await _jornadaRepository.CreateAsync(jornadaCreateDto);
+
+                return CreatedAtAction(nameof(GetJornada), new { id = jornada.Id }, jornada);
             }
-
-            var jornada = new Jornada
+            catch (Exception ex)
             {
-                Titulo = jornadaCreateDto.Titulo,
-                Descripcion = jornadaCreateDto.Descripcion,
-                Fecha = jornadaCreateDto.Fecha,
-                Lugar = jornadaCreateDto.Lugar,
-                HorasEstimadas = jornadaCreateDto.HorasEstimadas,
-                VoluntarioId = jornadaCreateDto.VoluntarioId
-            };
-
-            _context.Jornadas.Add(jornada);
-            await _context.SaveChangesAsync();
-
-            var jornadaDto = await _context.Jornadas
-                .Include(j => j.Voluntario)
-                .Where(j => j.Id == jornada.Id)
-                .Select(j => new JornadaDto
-                {
-                    Id = j.Id,
-                    Titulo = j.Titulo,
-                    Descripcion = j.Descripcion,
-                    Fecha = j.Fecha,
-                    Lugar = j.Lugar,
-                    HorasEstimadas = j.HorasEstimadas,
-                    VoluntarioId = j.VoluntarioId,
-                    NombreVoluntario = j.Voluntario != null
-                        ? j.Voluntario.Nombre + " " + j.Voluntario.Apellido
-                        : null
-                })
-                .FirstOrDefaultAsync();
-
-            return CreatedAtAction(nameof(GetJornada), new { id = jornada.Id }, jornadaDto);
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> ActualizarJornada(int id, JornadaUpdateDto jornadaUpdateDto)
         {
-            var jornada = await _context.Jornadas.FindAsync(id);
-
-            if (jornada == null)
+            try
             {
-                return NotFound($"No se encontró una jornada con el ID {id}.");
+                var actualizado = await _jornadaRepository.UpdateAsync(id, jornadaUpdateDto);
+
+                if (!actualizado)
+                {
+                    return NotFound($"No se encontró una jornada con el ID {id}.");
+                }
+
+                return NoContent();
             }
-
-            var voluntarioExiste = await _context.Voluntarios
-                .AnyAsync(v => v.Id == jornadaUpdateDto.VoluntarioId);
-
-            if (!voluntarioExiste)
+            catch (Exception ex)
             {
-                return BadRequest($"No existe un voluntario con el ID {jornadaUpdateDto.VoluntarioId}.");
+                return BadRequest(ex.Message);
             }
-
-            jornada.Titulo = jornadaUpdateDto.Titulo;
-            jornada.Descripcion = jornadaUpdateDto.Descripcion;
-            jornada.Fecha = jornadaUpdateDto.Fecha;
-            jornada.Lugar = jornadaUpdateDto.Lugar;
-            jornada.HorasEstimadas = jornadaUpdateDto.HorasEstimadas;
-            jornada.VoluntarioId = jornadaUpdateDto.VoluntarioId;
-
-            await _context.SaveChangesAsync();
-
-            return NoContent();
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> EliminarJornada(int id)
         {
-            var jornada = await _context.Jornadas.FindAsync(id);
+            var eliminado = await _jornadaRepository.DeleteAsync(id);
 
-            if (jornada == null)
+            if (!eliminado)
             {
                 return NotFound($"No se encontró una jornada con el ID {id}.");
             }
-
-            _context.Jornadas.Remove(jornada);
-            await _context.SaveChangesAsync();
 
             return NoContent();
         }
