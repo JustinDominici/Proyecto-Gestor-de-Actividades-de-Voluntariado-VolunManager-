@@ -5,27 +5,27 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using VolunManager.Api.Context;
+using VolunManager.Infrastructure.Context;
 
 #nullable disable
 
-namespace VolunManager.Api.Migrations
+namespace VolunManager.Infrastructure.Migrations
 {
     [DbContext(typeof(VolunManagerContext))]
-    [Migration("20260612234116_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260715000410_InitialCreateDomainInfra")]
+    partial class InitialCreateDomainInfra
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.9")
+                .HasAnnotation("ProductVersion", "10.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("VolunManager.Api.Models.Jornada", b =>
+            modelBuilder.Entity("VolunManager.Domain.Entities.Jornada", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -61,7 +61,7 @@ namespace VolunManager.Api.Migrations
                     b.ToTable("Jornadas");
                 });
 
-            modelBuilder.Entity("VolunManager.Api.Models.Voluntario", b =>
+            modelBuilder.Entity("VolunManager.Domain.Entities.Voluntario", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -93,9 +93,9 @@ namespace VolunManager.Api.Migrations
                     b.ToTable("Voluntarios");
                 });
 
-            modelBuilder.Entity("VolunManager.Api.Models.Jornada", b =>
+            modelBuilder.Entity("VolunManager.Domain.Entities.Jornada", b =>
                 {
-                    b.HasOne("VolunManager.Api.Models.Voluntario", "Voluntario")
+                    b.HasOne("VolunManager.Domain.Entities.Voluntario", "Voluntario")
                         .WithMany("Jornadas")
                         .HasForeignKey("VoluntarioId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -104,7 +104,7 @@ namespace VolunManager.Api.Migrations
                     b.Navigation("Voluntario");
                 });
 
-            modelBuilder.Entity("VolunManager.Api.Models.Voluntario", b =>
+            modelBuilder.Entity("VolunManager.Domain.Entities.Voluntario", b =>
                 {
                     b.Navigation("Jornadas");
                 });

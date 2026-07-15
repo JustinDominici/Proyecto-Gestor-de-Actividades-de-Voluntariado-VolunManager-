@@ -1,6 +1,6 @@
-namespace VolunManager.Api.Models
+﻿namespace VolunManager.Infrastructure.Models
 {
-    public class Voluntario
+    public class VoluntarioDto
     {
         public int Id { get; set; }
 
@@ -12,8 +12,6 @@ namespace VolunManager.Api.Models
 
         public string Telefono { get; set; } = string.Empty;
 
-        public bool Activo { get; set; } = true;
-
-        public ICollection<Jornada> Jornadas { get; set; } = new List<Jornada>();
+        public bool Activo { get; set; }
     }
 }

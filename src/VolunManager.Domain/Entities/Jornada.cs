@@ -1,9 +1,9 @@
-﻿namespace VolunManager.Api.DTOs.Jornadas
-{
-    public class JornadaDto
-    {
-        public int Id { get; set; }
+﻿using VolunManager.Domain.Core;
 
+namespace VolunManager.Domain.Entities
+{
+    public class Jornada : BaseEntity
+    {
         public string Titulo { get; set; } = string.Empty;
 
         public string Descripcion { get; set; } = string.Empty;
@@ -16,6 +16,6 @@
 
         public int VoluntarioId { get; set; }
 
-        public string? NombreVoluntario { get; set; }
+        public Voluntario? Voluntario { get; set; }
     }
 }

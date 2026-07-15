@@ -1,6 +1,8 @@
-﻿namespace VolunManager.Api.DTOs.Voluntarios
+﻿using VolunManager.Domain.Core;
+
+namespace VolunManager.Domain.Entities
 {
-    public class VoluntarioCreateDto
+    public class Voluntario : BaseEntity
     {
         public string Nombre { get; set; } = string.Empty;
 
@@ -9,5 +11,9 @@
         public string Correo { get; set; } = string.Empty;
 
         public string Telefono { get; set; } = string.Empty;
+
+        public bool Activo { get; set; } = true;
+
+        public ICollection<Jornada> Jornadas { get; set; } = new List<Jornada>();
     }
 }

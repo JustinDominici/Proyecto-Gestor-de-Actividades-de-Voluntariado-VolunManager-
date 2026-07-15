@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using VolunManager.Api.Context;
-using VolunManager.Api.DTOs.Voluntarios;
-using VolunManager.Api.Models;
+using VolunManager.Infrastructure.Interfaces;
+using VolunManager.Infrastructure.Models;
 
 namespace VolunManager.Api.Controllers
 {
@@ -10,27 +8,17 @@ namespace VolunManager.Api.Controllers
     [Route("api/[controller]")]
     public class VoluntariosController : ControllerBase
     {
-        private readonly VolunManagerContext _context;
+        private readonly IVoluntarioRepository _voluntarioRepository;
 
-        public VoluntariosController(VolunManagerContext context)
+        public VoluntariosController(IVoluntarioRepository voluntarioRepository)
         {
-            _context = context;
+            _voluntarioRepository = voluntarioRepository;
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<VoluntarioDto>>> GetVoluntarios()
         {
-            var voluntarios = await _context.Voluntarios
-                .Select(v => new VoluntarioDto
-                {
-                    Id = v.Id,
-                    Nombre = v.Nombre,
-                    Apellido = v.Apellido,
-                    Correo = v.Correo,
-                    Telefono = v.Telefono,
-                    Activo = v.Activo
-                })
-                .ToListAsync();
+            var voluntarios = await _voluntarioRepository.GetAllAsync();
 
             return Ok(voluntarios);
         }
@@ -38,18 +26,7 @@ namespace VolunManager.Api.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<VoluntarioDto>> GetVoluntario(int id)
         {
-            var voluntario = await _context.Voluntarios
-                .Where(v => v.Id == id)
-                .Select(v => new VoluntarioDto
-                {
-                    Id = v.Id,
-                    Nombre = v.Nombre,
-                    Apellido = v.Apellido,
-                    Correo = v.Correo,
-                    Telefono = v.Telefono,
-                    Activo = v.Activo
-                })
-                .FirstOrDefaultAsync();
+            var voluntario = await _voluntarioRepository.GetByIdAsync(id);
 
             if (voluntario == null)
             {
@@ -62,48 +39,20 @@ namespace VolunManager.Api.Controllers
         [HttpPost]
         public async Task<ActionResult<VoluntarioDto>> CrearVoluntario(VoluntarioCreateDto voluntarioCreateDto)
         {
-            var voluntario = new Voluntario
-            {
-                Nombre = voluntarioCreateDto.Nombre,
-                Apellido = voluntarioCreateDto.Apellido,
-                Correo = voluntarioCreateDto.Correo,
-                Telefono = voluntarioCreateDto.Telefono,
-                Activo = true
-            };
+            var voluntario = await _voluntarioRepository.CreateAsync(voluntarioCreateDto);
 
-            _context.Voluntarios.Add(voluntario);
-            await _context.SaveChangesAsync();
-
-            var voluntarioDto = new VoluntarioDto
-            {
-                Id = voluntario.Id,
-                Nombre = voluntario.Nombre,
-                Apellido = voluntario.Apellido,
-                Correo = voluntario.Correo,
-                Telefono = voluntario.Telefono,
-                Activo = voluntario.Activo
-            };
-
-            return CreatedAtAction(nameof(GetVoluntario), new { id = voluntario.Id }, voluntarioDto);
+            return CreatedAtAction(nameof(GetVoluntario), new { id = voluntario.Id }, voluntario);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> ActualizarVoluntario(int id, VoluntarioUpdateDto voluntarioUpdateDto)
         {
-            var voluntario = await _context.Voluntarios.FindAsync(id);
+            var actualizado = await _voluntarioRepository.UpdateAsync(id, voluntarioUpdateDto);
 
-            if (voluntario == null)
+            if (!actualizado)
             {
                 return NotFound($"No se encontró un voluntario con el ID {id}.");
             }
-
-            voluntario.Nombre = voluntarioUpdateDto.Nombre;
-            voluntario.Apellido = voluntarioUpdateDto.Apellido;
-            voluntario.Correo = voluntarioUpdateDto.Correo;
-            voluntario.Telefono = voluntarioUpdateDto.Telefono;
-            voluntario.Activo = voluntarioUpdateDto.Activo;
-
-            await _context.SaveChangesAsync();
 
             return NoContent();
         }
@@ -111,15 +60,12 @@ namespace VolunManager.Api.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> EliminarVoluntario(int id)
         {
-            var voluntario = await _context.Voluntarios.FindAsync(id);
+            var eliminado = await _voluntarioRepository.DeleteAsync(id);
 
-            if (voluntario == null)
+            if (!eliminado)
             {
                 return NotFound($"No se encontró un voluntario con el ID {id}.");
             }
-
-            _context.Voluntarios.Remove(voluntario);
-            await _context.SaveChangesAsync();
 
             return NoContent();
         }

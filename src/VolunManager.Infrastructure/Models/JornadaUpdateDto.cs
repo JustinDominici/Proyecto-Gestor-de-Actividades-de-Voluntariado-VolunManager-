@@ -1,9 +1,7 @@
-﻿namespace VolunManager.Api.Models
+﻿namespace VolunManager.Infrastructure.Models
 {
-    public class Jornada
+    public class JornadaUpdateDto
     {
-        public int Id { get; set; }
-
         public string Titulo { get; set; } = string.Empty;
 
         public string Descripcion { get; set; } = string.Empty;
@@ -15,7 +13,5 @@
         public int HorasEstimadas { get; set; }
 
         public int VoluntarioId { get; set; }
-
-        public Voluntario? Voluntario { get; set; }
     }
 }
