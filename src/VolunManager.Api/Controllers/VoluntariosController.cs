@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using VolunManager.Infrastructure.Interfaces;
-using VolunManager.Infrastructure.Models;
+using VolunManager.Application.Contract;
+using VolunManager.Application.Dtos.Voluntarios;
 
 namespace VolunManager.Api.Controllers
 {
@@ -8,66 +8,76 @@ namespace VolunManager.Api.Controllers
     [Route("api/[controller]")]
     public class VoluntariosController : ControllerBase
     {
-        private readonly IVoluntarioRepository _voluntarioRepository;
+        private readonly IVoluntarioService _voluntarioService;
 
-        public VoluntariosController(IVoluntarioRepository voluntarioRepository)
+        public VoluntariosController(IVoluntarioService voluntarioService)
         {
-            _voluntarioRepository = voluntarioRepository;
+            _voluntarioService = voluntarioService;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<VoluntarioDto>>> GetVoluntarios()
+        public async Task<IActionResult> GetVoluntarios()
         {
-            var voluntarios = await _voluntarioRepository.GetAllAsync();
+            var result = await _voluntarioService.GetAllAsync();
 
-            return Ok(voluntarios);
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
+
+            return Ok(result);
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<VoluntarioDto>> GetVoluntario(int id)
+        public async Task<IActionResult> GetVoluntario(int id)
         {
-            var voluntario = await _voluntarioRepository.GetByIdAsync(id);
+            var result = await _voluntarioService.GetByIdAsync(id);
 
-            if (voluntario == null)
+            if (!result.Success)
             {
-                return NotFound($"No se encontró un voluntario con el ID {id}.");
+                return NotFound(result);
             }
 
-            return Ok(voluntario);
+            return Ok(result);
         }
 
         [HttpPost]
-        public async Task<ActionResult<VoluntarioDto>> CrearVoluntario(VoluntarioCreateDto voluntarioCreateDto)
+        public async Task<IActionResult> CrearVoluntario(VoluntarioCreateDto voluntarioCreateDto)
         {
-            var voluntario = await _voluntarioRepository.CreateAsync(voluntarioCreateDto);
+            var result = await _voluntarioService.CreateAsync(voluntarioCreateDto);
 
-            return CreatedAtAction(nameof(GetVoluntario), new { id = voluntario.Id }, voluntario);
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
+
+            return Ok(result);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> ActualizarVoluntario(int id, VoluntarioUpdateDto voluntarioUpdateDto)
         {
-            var actualizado = await _voluntarioRepository.UpdateAsync(id, voluntarioUpdateDto);
+            var result = await _voluntarioService.UpdateAsync(id, voluntarioUpdateDto);
 
-            if (!actualizado)
+            if (!result.Success)
             {
-                return NotFound($"No se encontró un voluntario con el ID {id}.");
+                return BadRequest(result);
             }
 
-            return NoContent();
+            return Ok(result);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> EliminarVoluntario(int id)
         {
-            var eliminado = await _voluntarioRepository.DeleteAsync(id);
+            var result = await _voluntarioService.DeleteAsync(id);
 
-            if (!eliminado)
+            if (!result.Success)
             {
-                return NotFound($"No se encontró un voluntario con el ID {id}.");
+                return NotFound(result);
             }
 
-            return NoContent();
+            return Ok(result);
         }
     }
 }

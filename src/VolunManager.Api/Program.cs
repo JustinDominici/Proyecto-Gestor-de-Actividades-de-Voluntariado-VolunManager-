@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using VolunManager.Application.Contract;
+using VolunManager.Application.Service;
 using VolunManager.Infrastructure.Context;
 using VolunManager.Infrastructure.Interfaces;
 using VolunManager.Infrastructure.Repositories;
@@ -10,8 +12,13 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<VolunManagerContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("VolunManagerConnection")));
 
+// Repositorios
 builder.Services.AddScoped<IVoluntarioRepository, VoluntarioRepository>();
 builder.Services.AddScoped<IJornadaRepository, JornadaRepository>();
+
+// Servicios de negocio
+builder.Services.AddScoped<IVoluntarioService, VoluntarioService>();
+builder.Services.AddScoped<IJornadaService, JornadaService>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
