@@ -1,8 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using VolunManager.Domain.Entities;
+using VolunManager.Domain.Interfaces;
 using VolunManager.Infrastructure.Context;
-using VolunManager.Infrastructure.Interfaces;
-using VolunManager.Infrastructure.Models;
 
 namespace VolunManager.Infrastructure.Repositories
 {
@@ -15,80 +14,25 @@ namespace VolunManager.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<IEnumerable<VoluntarioDto>> GetAllAsync()
+        public async Task<IEnumerable<Voluntario>> GetAllAsync()
+        {
+            return await _context.Voluntarios.ToListAsync();
+        }
+
+        public async Task<Voluntario?> GetByIdAsync(int id)
+        {
+            return await _context.Voluntarios.FindAsync(id);
+        }
+
+        public async Task<bool> ExisteCorreoAsync(string correo, int? idAExcluir = null)
         {
             return await _context.Voluntarios
-                .Select(v => new VoluntarioDto
-                {
-                    Id = v.Id,
-                    Nombre = v.Nombre,
-                    Apellido = v.Apellido,
-                    Correo = v.Correo,
-                    Telefono = v.Telefono,
-                    Activo = v.Activo
-                })
-                .ToListAsync();
+                .AnyAsync(v => v.Correo == correo && (idAExcluir == null || v.Id != idAExcluir));
         }
 
-        public async Task<VoluntarioDto?> GetByIdAsync(int id)
+        public async Task AddAsync(Voluntario voluntario)
         {
-            return await _context.Voluntarios
-                .Where(v => v.Id == id)
-                .Select(v => new VoluntarioDto
-                {
-                    Id = v.Id,
-                    Nombre = v.Nombre,
-                    Apellido = v.Apellido,
-                    Correo = v.Correo,
-                    Telefono = v.Telefono,
-                    Activo = v.Activo
-                })
-                .FirstOrDefaultAsync();
-        }
-
-        public async Task<VoluntarioDto> CreateAsync(VoluntarioCreateDto voluntarioCreateDto)
-        {
-            var voluntario = new Voluntario
-            {
-                Nombre = voluntarioCreateDto.Nombre,
-                Apellido = voluntarioCreateDto.Apellido,
-                Correo = voluntarioCreateDto.Correo,
-                Telefono = voluntarioCreateDto.Telefono,
-                Activo = true
-            };
-
-            _context.Voluntarios.Add(voluntario);
-            await _context.SaveChangesAsync();
-
-            return new VoluntarioDto
-            {
-                Id = voluntario.Id,
-                Nombre = voluntario.Nombre,
-                Apellido = voluntario.Apellido,
-                Correo = voluntario.Correo,
-                Telefono = voluntario.Telefono,
-                Activo = voluntario.Activo
-            };
-        }
-
-        public async Task<bool> UpdateAsync(int id, VoluntarioUpdateDto voluntarioUpdateDto)
-        {
-            var voluntario = await _context.Voluntarios.FindAsync(id);
-
-            if (voluntario == null)
-            {
-                return false;
-            }
-
-            voluntario.Nombre = voluntarioUpdateDto.Nombre;
-            voluntario.Apellido = voluntarioUpdateDto.Apellido;
-            voluntario.Correo = voluntarioUpdateDto.Correo;
-            voluntario.Telefono = voluntarioUpdateDto.Telefono;
-            voluntario.Activo = voluntarioUpdateDto.Activo;
-
-            await _context.SaveChangesAsync();
-
-            return true;
+            await _context.Voluntarios.AddAsync(voluntario);
         }
 
         public async Task<bool> DeleteAsync(int id)
@@ -104,6 +48,11 @@ namespace VolunManager.Infrastructure.Repositories
             await _context.SaveChangesAsync();
 
             return true;
+        }
+
+        public async Task SaveChangesAsync()
+        {
+            await _context.SaveChangesAsync();
         }
     }
 }

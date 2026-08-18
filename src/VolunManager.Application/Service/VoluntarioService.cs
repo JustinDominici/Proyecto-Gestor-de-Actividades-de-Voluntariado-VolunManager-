@@ -1,11 +1,8 @@
 using VolunManager.Application.Contract;
 using VolunManager.Application.Core;
 using VolunManager.Application.Dtos.Voluntarios;
-using VolunManager.Infrastructure.Interfaces;
-
-using InfraVoluntarioDto = VolunManager.Infrastructure.Models.VoluntarioDto;
-using InfraVoluntarioCreateDto = VolunManager.Infrastructure.Models.VoluntarioCreateDto;
-using InfraVoluntarioUpdateDto = VolunManager.Infrastructure.Models.VoluntarioUpdateDto;
+using VolunManager.Domain.Entities;
+using VolunManager.Domain.Interfaces;
 
 namespace VolunManager.Application.Service
 {
@@ -22,7 +19,7 @@ namespace VolunManager.Application.Service
         {
             var voluntarios = await _voluntarioRepository.GetAllAsync();
 
-            var resultado = voluntarios.Select(MapToApplicationDto);
+            var resultado = voluntarios.Select(MapToDto);
 
             return Ok(resultado, "Voluntarios obtenidos correctamente.");
         }
@@ -41,7 +38,7 @@ namespace VolunManager.Application.Service
                 return Fail<VoluntarioDto>("No se encontró el voluntario solicitado.");
             }
 
-            return Ok(MapToApplicationDto(voluntario), "Voluntario obtenido correctamente.");
+            return Ok(MapToDto(voluntario), "Voluntario obtenido correctamente.");
         }
 
         public async Task<ServiceResult<VoluntarioDto>> CreateAsync(VoluntarioCreateDto dto)
@@ -53,17 +50,19 @@ namespace VolunManager.Application.Service
                 return Fail<VoluntarioDto>(validationMessage);
             }
 
-            var infraDto = new InfraVoluntarioCreateDto
+            var correoEnUso = await _voluntarioRepository.ExisteCorreoAsync(dto.Correo.Trim());
+
+            if (correoEnUso)
             {
-                Nombre = dto.Nombre.Trim(),
-                Apellido = dto.Apellido.Trim(),
-                Correo = dto.Correo.Trim(),
-                Telefono = dto.Telefono.Trim()
-            };
+                return Fail<VoluntarioDto>("Ya existe un voluntario registrado con ese correo.");
+            }
 
-            var voluntarioCreado = await _voluntarioRepository.CreateAsync(infraDto);
+            var voluntario = new Voluntario(dto.Nombre.Trim(), dto.Apellido.Trim(), dto.Correo.Trim(), dto.Telefono.Trim());
 
-            return Ok(MapToApplicationDto(voluntarioCreado), "Voluntario creado correctamente.");
+            await _voluntarioRepository.AddAsync(voluntario);
+            await _voluntarioRepository.SaveChangesAsync();
+
+            return Ok(MapToDto(voluntario), "Voluntario creado correctamente.");
         }
 
         public async Task<ServiceResult<bool>> UpdateAsync(int id, VoluntarioUpdateDto dto)
@@ -80,21 +79,23 @@ namespace VolunManager.Application.Service
                 return Fail<bool>(validationMessage);
             }
 
-            var infraDto = new InfraVoluntarioUpdateDto
-            {
-                Nombre = dto.Nombre.Trim(),
-                Apellido = dto.Apellido.Trim(),
-                Correo = dto.Correo.Trim(),
-                Telefono = dto.Telefono.Trim(),
-                Activo = dto.Activo
-            };
+            var voluntario = await _voluntarioRepository.GetByIdAsync(id);
 
-            var actualizado = await _voluntarioRepository.UpdateAsync(id, infraDto);
-
-            if (!actualizado)
+            if (voluntario == null)
             {
                 return Fail<bool>("No se encontró el voluntario que desea actualizar.");
             }
+
+            var correoEnUso = await _voluntarioRepository.ExisteCorreoAsync(dto.Correo.Trim(), id);
+
+            if (correoEnUso)
+            {
+                return Fail<bool>("Ya existe otro voluntario registrado con ese correo.");
+            }
+
+            voluntario.Actualizar(dto.Nombre.Trim(), dto.Apellido.Trim(), dto.Correo.Trim(), dto.Telefono.Trim(), dto.Activo);
+
+            await _voluntarioRepository.SaveChangesAsync();
 
             return Ok(true, "Voluntario actualizado correctamente.");
         }
@@ -146,16 +147,16 @@ namespace VolunManager.Application.Service
             return string.Empty;
         }
 
-        private VoluntarioDto MapToApplicationDto(InfraVoluntarioDto dto)
+        private static VoluntarioDto MapToDto(Voluntario voluntario)
         {
             return new VoluntarioDto
             {
-                Id = dto.Id,
-                Nombre = dto.Nombre,
-                Apellido = dto.Apellido,
-                Correo = dto.Correo,
-                Telefono = dto.Telefono,
-                Activo = dto.Activo
+                Id = voluntario.Id,
+                Nombre = voluntario.Nombre,
+                Apellido = voluntario.Apellido,
+                Correo = voluntario.Correo,
+                Telefono = voluntario.Telefono,
+                Activo = voluntario.Activo
             };
         }
     }
