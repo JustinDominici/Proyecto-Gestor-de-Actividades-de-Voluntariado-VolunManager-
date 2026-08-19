@@ -16,18 +16,27 @@ namespace VolunManager.Infrastructure.Repositories
 
         public async Task<IEnumerable<Voluntario>> GetAllAsync()
         {
-            return await _context.Voluntarios.ToListAsync();
+            return await _context.Voluntarios
+                .Include(v => v.Rol)
+                .ToListAsync();
         }
 
         public async Task<Voluntario?> GetByIdAsync(int id)
         {
-            return await _context.Voluntarios.FindAsync(id);
+            return await _context.Voluntarios
+                .Include(v => v.Rol)
+                .FirstOrDefaultAsync(v => v.Id == id);
         }
 
         public async Task<bool> ExisteCorreoAsync(string correo, int? idAExcluir = null)
         {
             return await _context.Voluntarios
                 .AnyAsync(v => v.Correo == correo && (idAExcluir == null || v.Id != idAExcluir));
+        }
+
+        public async Task<bool> ExisteRolAsync(int rolId)
+        {
+            return await _context.Roles.AnyAsync(r => r.Id == rolId);
         }
 
         public async Task AddAsync(Voluntario voluntario)

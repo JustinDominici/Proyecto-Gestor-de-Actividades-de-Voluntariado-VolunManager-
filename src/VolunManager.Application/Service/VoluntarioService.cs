@@ -57,7 +57,14 @@ namespace VolunManager.Application.Service
                 return Fail<VoluntarioDto>("Ya existe un voluntario registrado con ese correo.");
             }
 
-            var voluntario = new Voluntario(dto.Nombre.Trim(), dto.Apellido.Trim(), dto.Correo.Trim(), dto.Telefono.Trim());
+            var rolExiste = await _voluntarioRepository.ExisteRolAsync(dto.RolId);
+
+            if (!rolExiste)
+            {
+                return Fail<VoluntarioDto>($"No existe un rol con el ID {dto.RolId}.");
+            }
+
+            var voluntario = new Voluntario(dto.Nombre.Trim(), dto.Apellido.Trim(), dto.Correo.Trim(), dto.Telefono.Trim(), dto.RolId);
 
             await _voluntarioRepository.AddAsync(voluntario);
             await _voluntarioRepository.SaveChangesAsync();
@@ -93,7 +100,14 @@ namespace VolunManager.Application.Service
                 return Fail<bool>("Ya existe otro voluntario registrado con ese correo.");
             }
 
-            voluntario.Actualizar(dto.Nombre.Trim(), dto.Apellido.Trim(), dto.Correo.Trim(), dto.Telefono.Trim(), dto.Activo);
+            var rolExiste = await _voluntarioRepository.ExisteRolAsync(dto.RolId);
+
+            if (!rolExiste)
+            {
+                return Fail<bool>($"No existe un rol con el ID {dto.RolId}.");
+            }
+
+            voluntario.Actualizar(dto.Nombre.Trim(), dto.Apellido.Trim(), dto.Correo.Trim(), dto.Telefono.Trim(), dto.Activo, dto.RolId);
 
             await _voluntarioRepository.SaveChangesAsync();
 
@@ -156,7 +170,9 @@ namespace VolunManager.Application.Service
                 Apellido = voluntario.Apellido,
                 Correo = voluntario.Correo,
                 Telefono = voluntario.Telefono,
-                Activo = voluntario.Activo
+                Activo = voluntario.Activo,
+                RolId = voluntario.RolId,
+                NombreRol = voluntario.Rol?.Nombre
             };
         }
     }

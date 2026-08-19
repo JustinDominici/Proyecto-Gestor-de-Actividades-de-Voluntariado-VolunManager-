@@ -11,5 +11,7 @@ namespace VolunManager.Application.Dtos.Voluntarios
         public string Telefono { get; set; } = string.Empty;
 
         public bool Activo { get; set; }
+
+        public int RolId { get; set; }
     }
 }
