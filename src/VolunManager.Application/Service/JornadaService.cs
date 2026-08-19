@@ -1,11 +1,8 @@
 using VolunManager.Application.Contract;
 using VolunManager.Application.Core;
 using VolunManager.Application.Dtos.Jornadas;
-using VolunManager.Infrastructure.Interfaces;
-
-using InfraJornadaDto = VolunManager.Infrastructure.Models.JornadaDto;
-using InfraJornadaCreateDto = VolunManager.Infrastructure.Models.JornadaCreateDto;
-using InfraJornadaUpdateDto = VolunManager.Infrastructure.Models.JornadaUpdateDto;
+using VolunManager.Domain.Entities;
+using VolunManager.Domain.Interfaces;
 
 namespace VolunManager.Application.Service
 {
@@ -22,7 +19,7 @@ namespace VolunManager.Application.Service
         {
             var jornadas = await _jornadaRepository.GetAllAsync();
 
-            var resultado = jornadas.Select(MapToApplicationDto);
+            var resultado = jornadas.Select(MapToDto);
 
             return Ok(resultado, "Jornadas obtenidas correctamente.");
         }
@@ -41,38 +38,33 @@ namespace VolunManager.Application.Service
                 return Fail<JornadaDto>("No se encontró la jornada solicitada.");
             }
 
-            return Ok(MapToApplicationDto(jornada), "Jornada obtenida correctamente.");
+            return Ok(MapToDto(jornada), "Jornada obtenida correctamente.");
         }
 
         public async Task<ServiceResult<JornadaDto>> CreateAsync(JornadaCreateDto dto)
         {
-            var validationMessage = ValidateJornada(dto.Titulo, dto.Descripcion, dto.Fecha, dto.Lugar, dto.HorasEstimadas, dto.VoluntarioId);
+            var validationMessage = ValidateJornada(dto.Titulo, dto.Lugar, dto.HorasEstimadas);
 
             if (!string.IsNullOrEmpty(validationMessage))
             {
                 return Fail<JornadaDto>(validationMessage);
             }
 
-            var infraDto = new InfraJornadaCreateDto
-            {
-                Titulo = dto.Titulo.Trim(),
-                Descripcion = dto.Descripcion.Trim(),
-                Fecha = dto.Fecha,
-                Lugar = dto.Lugar.Trim(),
-                HorasEstimadas = dto.HorasEstimadas,
-                VoluntarioId = dto.VoluntarioId
-            };
+            var voluntarioExiste = await _jornadaRepository.ExisteVoluntarioAsync(dto.VoluntarioId);
 
-            try
+            if (!voluntarioExiste)
             {
-                var jornadaCreada = await _jornadaRepository.CreateAsync(infraDto);
+                return Fail<JornadaDto>($"No existe un voluntario con el ID {dto.VoluntarioId}.");
+            }
 
-                return Ok(MapToApplicationDto(jornadaCreada), "Jornada creada correctamente.");
-            }
-            catch (Exception ex)
-            {
-                return Fail<JornadaDto>(ex.Message);
-            }
+            var jornada = new Jornada(dto.Titulo.Trim(), dto.Descripcion.Trim(), dto.Fecha, dto.Lugar.Trim(), dto.HorasEstimadas, dto.VoluntarioId);
+
+            await _jornadaRepository.AddAsync(jornada);
+            await _jornadaRepository.SaveChangesAsync();
+
+            var jornadaCreada = await _jornadaRepository.GetByIdAsync(jornada.Id);
+
+            return Ok(MapToDto(jornadaCreada!), "Jornada creada correctamente.");
         }
 
         public async Task<ServiceResult<bool>> UpdateAsync(int id, JornadaUpdateDto dto)
@@ -82,38 +74,32 @@ namespace VolunManager.Application.Service
                 return Fail<bool>("El ID de la jornada no es válido.");
             }
 
-            var validationMessage = ValidateJornada(dto.Titulo, dto.Descripcion, dto.Fecha, dto.Lugar, dto.HorasEstimadas, dto.VoluntarioId);
+            var validationMessage = ValidateJornada(dto.Titulo, dto.Lugar, dto.HorasEstimadas);
 
             if (!string.IsNullOrEmpty(validationMessage))
             {
                 return Fail<bool>(validationMessage);
             }
 
-            var infraDto = new InfraJornadaUpdateDto
+            var jornada = await _jornadaRepository.GetByIdAsync(id);
+
+            if (jornada == null)
             {
-                Titulo = dto.Titulo.Trim(),
-                Descripcion = dto.Descripcion.Trim(),
-                Fecha = dto.Fecha,
-                Lugar = dto.Lugar.Trim(),
-                HorasEstimadas = dto.HorasEstimadas,
-                VoluntarioId = dto.VoluntarioId
-            };
-
-            try
-            {
-                var actualizado = await _jornadaRepository.UpdateAsync(id, infraDto);
-
-                if (!actualizado)
-                {
-                    return Fail<bool>("No se encontró la jornada que desea actualizar.");
-                }
-
-                return Ok(true, "Jornada actualizada correctamente.");
+                return Fail<bool>("No se encontró la jornada que desea actualizar.");
             }
-            catch (Exception ex)
+
+            var voluntarioExiste = await _jornadaRepository.ExisteVoluntarioAsync(dto.VoluntarioId);
+
+            if (!voluntarioExiste)
             {
-                return Fail<bool>(ex.Message);
+                return Fail<bool>($"No existe un voluntario con el ID {dto.VoluntarioId}.");
             }
+
+            jornada.Actualizar(dto.Titulo.Trim(), dto.Descripcion.Trim(), dto.Fecha, dto.Lugar.Trim(), dto.HorasEstimadas, dto.VoluntarioId);
+
+            await _jornadaRepository.SaveChangesAsync();
+
+            return Ok(true, "Jornada actualizada correctamente.");
         }
 
         public async Task<ServiceResult<bool>> DeleteAsync(int id)
@@ -133,26 +119,11 @@ namespace VolunManager.Application.Service
             return Ok(true, "Jornada eliminada correctamente.");
         }
 
-        private string ValidateJornada(string titulo, string descripcion, DateTime fecha, string lugar, int horasEstimadas, int voluntarioId)
+        private string ValidateJornada(string titulo, string lugar, int horasEstimadas)
         {
             if (IsEmpty(titulo))
             {
                 return "El título de la jornada es obligatorio.";
-            }
-
-            if (IsEmpty(descripcion))
-            {
-                return "La descripción de la jornada es obligatoria.";
-            }
-
-            if (fecha == default)
-            {
-                return "La fecha de la jornada es obligatoria.";
-            }
-
-            if (fecha.Date < DateTime.Today)
-            {
-                return "La fecha de la jornada no puede ser menor a la fecha actual.";
             }
 
             if (IsEmpty(lugar))
@@ -162,29 +133,26 @@ namespace VolunManager.Application.Service
 
             if (horasEstimadas <= 0)
             {
-                return "Las horas estimadas deben ser mayores que cero.";
-            }
-
-            if (voluntarioId <= 0)
-            {
-                return "Debe indicar un voluntario válido.";
+                return "Las horas estimadas deben ser mayores a cero.";
             }
 
             return string.Empty;
         }
 
-        private JornadaDto MapToApplicationDto(InfraJornadaDto dto)
+        private static JornadaDto MapToDto(Jornada jornada)
         {
             return new JornadaDto
             {
-                Id = dto.Id,
-                Titulo = dto.Titulo,
-                Descripcion = dto.Descripcion,
-                Fecha = dto.Fecha,
-                Lugar = dto.Lugar,
-                HorasEstimadas = dto.HorasEstimadas,
-                VoluntarioId = dto.VoluntarioId,
-                NombreVoluntario = dto.NombreVoluntario
+                Id = jornada.Id,
+                Titulo = jornada.Titulo,
+                Descripcion = jornada.Descripcion,
+                Fecha = jornada.Fecha,
+                Lugar = jornada.Lugar,
+                HorasEstimadas = jornada.HorasEstimadas,
+                VoluntarioId = jornada.VoluntarioId,
+                NombreVoluntario = jornada.Voluntario != null
+                    ? $"{jornada.Voluntario.Nombre} {jornada.Voluntario.Apellido}"
+                    : null
             };
         }
     }

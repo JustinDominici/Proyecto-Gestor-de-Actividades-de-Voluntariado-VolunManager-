@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using VolunManager.Application.Contract;
 using VolunManager.Application.Service;
+using VolunManager.Domain.Interfaces;
 using VolunManager.Infrastructure.Context;
-using VolunManager.Infrastructure.Interfaces;
 using VolunManager.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);

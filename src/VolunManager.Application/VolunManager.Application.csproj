@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\VolunManager.Infrastructure\VolunManager.Infrastructure.csproj" />
     <ProjectReference Include="..\VolunManager.Domain\VolunManager.Domain.csproj" />
   </ItemGroup>
 
