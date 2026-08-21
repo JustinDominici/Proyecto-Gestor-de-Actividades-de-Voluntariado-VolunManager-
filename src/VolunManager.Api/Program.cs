@@ -15,10 +15,12 @@ builder.Services.AddDbContext<VolunManagerContext>(options =>
 // Repositorios
 builder.Services.AddScoped<IVoluntarioRepository, VoluntarioRepository>();
 builder.Services.AddScoped<IJornadaRepository, JornadaRepository>();
+builder.Services.AddScoped<IRolRepository, RolRepository>();
 
 // Servicios de negocio
 builder.Services.AddScoped<IVoluntarioService, VoluntarioService>();
 builder.Services.AddScoped<IJornadaService, JornadaService>();
+builder.Services.AddScoped<IRolService, RolService>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

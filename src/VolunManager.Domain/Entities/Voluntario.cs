@@ -14,6 +14,10 @@ namespace VolunManager.Domain.Entities
 
         public bool Activo { get; private set; } = true;
 
+        public int RolId { get; private set; }
+
+        public Rol? Rol { get; private set; }
+
         public ICollection<Jornada> Jornadas { get; private set; } = new List<Jornada>();
 
         /// <summary>
@@ -26,28 +30,30 @@ namespace VolunManager.Domain.Entities
 
         /// <summary>
         /// Constructor parametrizado: es el que usa la aplicacion para crear
-        /// un voluntario nuevo con datos validos.
+        /// un voluntario nuevo con datos validos, ya asociado a un rol.
         /// </summary>
-        public Voluntario(string nombre, string apellido, string correo, string telefono)
+        public Voluntario(string nombre, string apellido, string correo, string telefono, int rolId)
         {
             Nombre = nombre;
             Apellido = apellido;
             Correo = correo;
             Telefono = telefono;
             Activo = true;
+            RolId = rolId;
         }
 
         /// <summary>
         /// Unico punto por el que se pueden modificar los datos del voluntario.
         /// Evita que cualquier capa externa toque las propiedades directamente.
         /// </summary>
-        public void Actualizar(string nombre, string apellido, string correo, string telefono, bool activo)
+        public void Actualizar(string nombre, string apellido, string correo, string telefono, bool activo, int rolId)
         {
             Nombre = nombre;
             Apellido = apellido;
             Correo = correo;
             Telefono = telefono;
             Activo = activo;
+            RolId = rolId;
         }
 
         public void Desactivar()
@@ -63,7 +69,8 @@ namespace VolunManager.Domain.Entities
         public override string ObtenerResumen()
         {
             var estado = Activo ? "Activo" : "Inactivo";
-            return $"Voluntario #{Id}: {Nombre} {Apellido} ({Correo}) - {estado}";
+            var rol = Rol?.Nombre ?? "sin rol cargado";
+            return $"Voluntario #{Id}: {Nombre} {Apellido} ({Correo}) - {estado} - Rol: {rol}";
         }
     }
 }

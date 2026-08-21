@@ -14,6 +14,8 @@ namespace VolunManager.Domain.Interfaces
 
         Task<bool> ExisteCorreoAsync(string correo, int? idAExcluir = null);
 
+        Task<bool> ExisteRolAsync(int rolId);
+
         Task AddAsync(Voluntario voluntario);
 
         Task<bool> DeleteAsync(int id);
