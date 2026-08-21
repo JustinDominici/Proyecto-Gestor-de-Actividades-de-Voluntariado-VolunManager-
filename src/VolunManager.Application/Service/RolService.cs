@@ -35,7 +35,7 @@ namespace VolunManager.Application.Service
 
             if (rol == null)
             {
-                return Fail<RolDto>("No se encontró el rol solicitado.");
+                return NotFound<RolDto>("No se encontró el rol solicitado.");
             }
 
             return Ok(MapToDto(rol), "Rol obtenido correctamente.");
@@ -54,7 +54,7 @@ namespace VolunManager.Application.Service
 
             if (nombreEnUso)
             {
-                return Fail<RolDto>("Ya existe un rol registrado con ese nombre.");
+                return Conflict<RolDto>("Ya existe un rol registrado con ese nombre.");
             }
 
             var rol = new Rol(dto.Nombre.Trim(), dto.Descripcion?.Trim() ?? string.Empty);
@@ -83,14 +83,14 @@ namespace VolunManager.Application.Service
 
             if (rol == null)
             {
-                return Fail<bool>("No se encontró el rol que desea actualizar.");
+                return NotFound<bool>("No se encontró el rol que desea actualizar.");
             }
 
             var nombreEnUso = await _rolRepository.ExisteNombreAsync(dto.Nombre.Trim(), id);
 
             if (nombreEnUso)
             {
-                return Fail<bool>("Ya existe otro rol registrado con ese nombre.");
+                return Conflict<bool>("Ya existe otro rol registrado con ese nombre.");
             }
 
             rol.Actualizar(dto.Nombre.Trim(), dto.Descripcion?.Trim() ?? string.Empty);
@@ -107,18 +107,29 @@ namespace VolunManager.Application.Service
                 return Fail<bool>("El ID del rol no es válido.");
             }
 
+            // Se busca primero para poder devolver 404 si no existe, en vez
+            // de mezclar ese motivo con el de "tiene voluntarios asociados"
+            // (409). Antes esta distincion la hacia el Controller llamando
+            // dos veces al servicio; ahora la resuelve el servicio solo.
+            var rol = await _rolRepository.GetByIdAsync(id);
+
+            if (rol == null)
+            {
+                return NotFound<bool>("No se encontró el rol que desea eliminar.");
+            }
+
             var tieneVoluntarios = await _rolRepository.TieneVoluntariosAsociadosAsync(id);
 
             if (tieneVoluntarios)
             {
-                return Fail<bool>("No se puede eliminar el rol porque tiene voluntarios asociados.");
+                return Conflict<bool>("No se puede eliminar el rol porque tiene voluntarios asociados.");
             }
 
             var eliminado = await _rolRepository.DeleteAsync(id);
 
             if (!eliminado)
             {
-                return Fail<bool>("No se encontró el rol que desea eliminar.");
+                return NotFound<bool>("No se encontró el rol que desea eliminar.");
             }
 
             return Ok(true, "Rol eliminado correctamente.");

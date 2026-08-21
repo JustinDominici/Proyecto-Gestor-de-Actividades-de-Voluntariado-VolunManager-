@@ -35,7 +35,7 @@ namespace VolunManager.Application.Service
 
             if (jornada == null)
             {
-                return Fail<JornadaDto>("No se encontró la jornada solicitada.");
+                return NotFound<JornadaDto>("No se encontró la jornada solicitada.");
             }
 
             return Ok(MapToDto(jornada), "Jornada obtenida correctamente.");
@@ -85,7 +85,7 @@ namespace VolunManager.Application.Service
 
             if (jornada == null)
             {
-                return Fail<bool>("No se encontró la jornada que desea actualizar.");
+                return NotFound<bool>("No se encontró la jornada que desea actualizar.");
             }
 
             var voluntarioExiste = await _jornadaRepository.ExisteVoluntarioAsync(dto.VoluntarioId);
@@ -113,7 +113,7 @@ namespace VolunManager.Application.Service
 
             if (!eliminado)
             {
-                return Fail<bool>("No se encontró la jornada que desea eliminar.");
+                return NotFound<bool>("No se encontró la jornada que desea eliminar.");
             }
 
             return Ok(true, "Jornada eliminada correctamente.");

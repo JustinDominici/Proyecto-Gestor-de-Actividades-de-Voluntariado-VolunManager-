@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using VolunManager.Api.Extensions;
 using VolunManager.Application.Contract;
 using VolunManager.Application.Dtos.Tareas;
 
@@ -20,12 +21,7 @@ namespace VolunManager.Api.Controllers
         {
             var result = await _tareaService.GetAllAsync();
 
-            if (!result.Success)
-            {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+            return result.ToActionResult();
         }
 
         [HttpGet("{id}")]
@@ -33,12 +29,7 @@ namespace VolunManager.Api.Controllers
         {
             var result = await _tareaService.GetByIdAsync(id);
 
-            if (!result.Success)
-            {
-                return NotFound(result);
-            }
-
-            return Ok(result);
+            return result.ToActionResult();
         }
 
         [HttpPost]
@@ -46,12 +37,7 @@ namespace VolunManager.Api.Controllers
         {
             var result = await _tareaService.CreateAsync(tareaCreateDto);
 
-            if (!result.Success)
-            {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+            return result.ToActionResult();
         }
 
         [HttpPut("{id}")]
@@ -59,12 +45,7 @@ namespace VolunManager.Api.Controllers
         {
             var result = await _tareaService.UpdateAsync(id, tareaUpdateDto);
 
-            if (!result.Success)
-            {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+            return result.ToActionResult();
         }
 
         [HttpDelete("{id}")]
@@ -72,12 +53,7 @@ namespace VolunManager.Api.Controllers
         {
             var result = await _tareaService.DeleteAsync(id);
 
-            if (!result.Success)
-            {
-                return NotFound(result);
-            }
-
-            return Ok(result);
+            return result.ToActionResult();
         }
     }
 }

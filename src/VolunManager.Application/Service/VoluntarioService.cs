@@ -35,7 +35,7 @@ namespace VolunManager.Application.Service
 
             if (voluntario == null)
             {
-                return Fail<VoluntarioDto>("No se encontró el voluntario solicitado.");
+                return NotFound<VoluntarioDto>("No se encontró el voluntario solicitado.");
             }
 
             return Ok(MapToDto(voluntario), "Voluntario obtenido correctamente.");
@@ -54,7 +54,7 @@ namespace VolunManager.Application.Service
 
             if (correoEnUso)
             {
-                return Fail<VoluntarioDto>("Ya existe un voluntario registrado con ese correo.");
+                return Conflict<VoluntarioDto>("Ya existe un voluntario registrado con ese correo.");
             }
 
             var rolExiste = await _voluntarioRepository.ExisteRolAsync(dto.RolId);
@@ -90,14 +90,14 @@ namespace VolunManager.Application.Service
 
             if (voluntario == null)
             {
-                return Fail<bool>("No se encontró el voluntario que desea actualizar.");
+                return NotFound<bool>("No se encontró el voluntario que desea actualizar.");
             }
 
             var correoEnUso = await _voluntarioRepository.ExisteCorreoAsync(dto.Correo.Trim(), id);
 
             if (correoEnUso)
             {
-                return Fail<bool>("Ya existe otro voluntario registrado con ese correo.");
+                return Conflict<bool>("Ya existe otro voluntario registrado con ese correo.");
             }
 
             var rolExiste = await _voluntarioRepository.ExisteRolAsync(dto.RolId);
@@ -125,28 +125,28 @@ namespace VolunManager.Application.Service
 
             if (voluntario == null)
             {
-                return Fail<bool>("No se encontró el voluntario que desea eliminar.");
+                return NotFound<bool>("No se encontró el voluntario que desea eliminar.");
             }
 
             var tieneTareas = await _voluntarioRepository.TieneTareasAsociadasAsync(id);
 
             if (tieneTareas)
             {
-                return Fail<bool>("No se puede eliminar el voluntario porque tiene tareas asociadas.");
+                return Conflict<bool>("No se puede eliminar el voluntario porque tiene tareas asociadas.");
             }
 
             var tieneAsistencias = await _voluntarioRepository.TieneAsistenciasAsociadasAsync(id);
 
             if (tieneAsistencias)
             {
-                return Fail<bool>("No se puede eliminar el voluntario porque tiene asistencias registradas.");
+                return Conflict<bool>("No se puede eliminar el voluntario porque tiene asistencias registradas.");
             }
 
             var eliminado = await _voluntarioRepository.DeleteAsync(id);
 
             if (!eliminado)
             {
-                return Fail<bool>("No se encontró el voluntario que desea eliminar.");
+                return NotFound<bool>("No se encontró el voluntario que desea eliminar.");
             }
 
             return Ok(true, "Voluntario eliminado correctamente.");

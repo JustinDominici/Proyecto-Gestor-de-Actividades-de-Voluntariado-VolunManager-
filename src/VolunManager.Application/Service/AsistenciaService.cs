@@ -35,7 +35,7 @@ namespace VolunManager.Application.Service
 
             if (asistencia == null)
             {
-                return Fail<AsistenciaDto>("No se encontró la asistencia solicitada.");
+                return NotFound<AsistenciaDto>("No se encontró la asistencia solicitada.");
             }
 
             return Ok(MapToDto(asistencia), "Asistencia obtenida correctamente.");
@@ -68,7 +68,7 @@ namespace VolunManager.Application.Service
 
             if (yaRegistrado)
             {
-                return Fail<AsistenciaDto>("Ese voluntario ya tiene una asistencia registrada para esa jornada.");
+                return Conflict<AsistenciaDto>("Ese voluntario ya tiene una asistencia registrada para esa jornada.");
             }
 
             var asistencia = new Asistencia(dto.VoluntarioId, dto.JornadaId, dto.HoraEntrada, dto.HoraSalida);
@@ -99,7 +99,7 @@ namespace VolunManager.Application.Service
 
             if (asistencia == null)
             {
-                return Fail<bool>("No se encontró la asistencia que desea actualizar.");
+                return NotFound<bool>("No se encontró la asistencia que desea actualizar.");
             }
 
             asistencia.Actualizar(dto.HoraEntrada, dto.HoraSalida);
@@ -120,7 +120,7 @@ namespace VolunManager.Application.Service
 
             if (!eliminado)
             {
-                return Fail<bool>("No se encontró la asistencia que desea eliminar.");
+                return NotFound<bool>("No se encontró la asistencia que desea eliminar.");
             }
 
             return Ok(true, "Asistencia eliminada correctamente.");

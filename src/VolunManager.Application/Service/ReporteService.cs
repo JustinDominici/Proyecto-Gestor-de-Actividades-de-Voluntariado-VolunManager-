@@ -35,14 +35,14 @@ namespace VolunManager.Application.Service
             var voluntarioExiste = await _reporteRepository.ExisteVoluntarioAsync(voluntarioId);
             if (!voluntarioExiste)
             {
-                return Fail<ReporteHorasDto>($"No existe un voluntario con el ID {voluntarioId}.");
+                return NotFound<ReporteHorasDto>($"No existe un voluntario con el ID {voluntarioId}.");
             }
 
             // Obtener datos del voluntario
             var voluntario = await _reporteRepository.ObtenerVoluntarioAsync(voluntarioId);
             if (voluntario == null)
             {
-                return Fail<ReporteHorasDto>("Error al obtener los datos del voluntario.");
+                return NotFound<ReporteHorasDto>("Error al obtener los datos del voluntario.");
             }
 
             // Obtener TODAS las asistencias del voluntario (sin filtro de fechas)
@@ -86,14 +86,14 @@ namespace VolunManager.Application.Service
             var voluntarioExiste = await _reporteRepository.ExisteVoluntarioAsync(voluntarioId);
             if (!voluntarioExiste)
             {
-                return Fail<ReporteHorasDto>($"No existe un voluntario con el ID {voluntarioId}.");
+                return NotFound<ReporteHorasDto>($"No existe un voluntario con el ID {voluntarioId}.");
             }
 
             // Obtener datos del voluntario
             var voluntario = await _reporteRepository.ObtenerVoluntarioAsync(voluntarioId);
             if (voluntario == null)
             {
-                return Fail<ReporteHorasDto>("Error al obtener los datos del voluntario.");
+                return NotFound<ReporteHorasDto>("Error al obtener los datos del voluntario.");
             }
 
             // Obtener asistencias en el rango de fechas
@@ -130,14 +130,14 @@ namespace VolunManager.Application.Service
             var jornadaExiste = await _reporteRepository.ExisteJornadaAsync(jornadaId);
             if (!jornadaExiste)
             {
-                return Fail<ReporteAsistenciaDto>($"No existe una jornada con el ID {jornadaId}.");
+                return NotFound<ReporteAsistenciaDto>($"No existe una jornada con el ID {jornadaId}.");
             }
 
             // Obtener datos de la jornada
             var jornada = await _reporteRepository.ObtenerJornadaAsync(jornadaId);
             if (jornada == null)
             {
-                return Fail<ReporteAsistenciaDto>("Error al obtener los datos de la jornada.");
+                return NotFound<ReporteAsistenciaDto>("Error al obtener los datos de la jornada.");
             }
 
             // Obtener TODAS las asistencias de la jornada
@@ -181,14 +181,14 @@ namespace VolunManager.Application.Service
             var jornadaExiste = await _reporteRepository.ExisteJornadaAsync(jornadaId);
             if (!jornadaExiste)
             {
-                return Fail<ReporteAsistenciaDto>($"No existe una jornada con el ID {jornadaId}.");
+                return NotFound<ReporteAsistenciaDto>($"No existe una jornada con el ID {jornadaId}.");
             }
 
             // Obtener datos de la jornada
             var jornada = await _reporteRepository.ObtenerJornadaAsync(jornadaId);
             if (jornada == null)
             {
-                return Fail<ReporteAsistenciaDto>("Error al obtener los datos de la jornada.");
+                return NotFound<ReporteAsistenciaDto>("Error al obtener los datos de la jornada.");
             }
 
             // Obtener asistencias en el rango de fechas
