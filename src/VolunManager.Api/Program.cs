@@ -25,6 +25,7 @@ builder.Services.AddScoped<IJornadaRepository, JornadaRepository>();
 builder.Services.AddScoped<IRolRepository, RolRepository>();
 builder.Services.AddScoped<ITareaRepository, TareaRepository>();
 builder.Services.AddScoped<IAsistenciaRepository, AsistenciaRepository>();
+builder.Services.AddScoped<IReporteRepository, ReporteRepository>();
 
 // Servicios de negocio
 builder.Services.AddScoped<IVoluntarioService, VoluntarioService>();
@@ -32,6 +33,18 @@ builder.Services.AddScoped<IJornadaService, JornadaService>();
 builder.Services.AddScoped<IRolService, RolService>();
 builder.Services.AddScoped<ITareaService, TareaService>();
 builder.Services.AddScoped<IAsistenciaService, AsistenciaService>();
+builder.Services.AddScoped<IReporteService, ReporteService>();
+
+// CORS para permitir al cliente Blazor conectarse
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowBlazorClient", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173", "https://localhost:5173")
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+    });
+});
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -45,6 +58,8 @@ if (app.Environment.IsDevelopment())
 }
 
 // app.UseHttpsRedirection();
+
+app.UseCors("AllowBlazorClient");
 
 app.UseAuthorization();
 
