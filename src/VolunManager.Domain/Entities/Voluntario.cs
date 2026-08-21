@@ -20,6 +20,8 @@ namespace VolunManager.Domain.Entities
 
         public ICollection<Jornada> Jornadas { get; private set; } = new List<Jornada>();
 
+        public ICollection<Tarea> Tareas { get; private set; } = new List<Tarea>();
+
         /// <summary>
         /// Constructor protegido y vacio: lo requiere Entity Framework Core
         /// para materializar la entidad al leerla de la base de datos.

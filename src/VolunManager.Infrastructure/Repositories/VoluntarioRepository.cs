@@ -39,6 +39,11 @@ namespace VolunManager.Infrastructure.Repositories
             return await _context.Roles.AnyAsync(r => r.Id == rolId);
         }
 
+        public async Task<bool> TieneTareasAsociadasAsync(int id)
+        {
+            return await _context.Tareas.AnyAsync(t => t.VoluntarioId == id);
+        }
+
         public async Task AddAsync(Voluntario voluntario)
         {
             await _context.Voluntarios.AddAsync(voluntario);

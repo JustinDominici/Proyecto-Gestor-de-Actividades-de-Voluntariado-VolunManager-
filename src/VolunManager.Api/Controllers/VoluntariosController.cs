@@ -70,11 +70,21 @@ namespace VolunManager.Api.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> EliminarVoluntario(int id)
         {
+            // Igual que en RolesController: se verifica primero si el voluntario
+            // existe (404) para distinguirlo del caso "no se puede eliminar
+            // porque tiene tareas asociadas" (400), que es otro motivo de fallo.
+            var existente = await _voluntarioService.GetByIdAsync(id);
+
+            if (!existente.Success)
+            {
+                return NotFound(existente);
+            }
+
             var result = await _voluntarioService.DeleteAsync(id);
 
             if (!result.Success)
             {
-                return NotFound(result);
+                return BadRequest(result);
             }
 
             return Ok(result);

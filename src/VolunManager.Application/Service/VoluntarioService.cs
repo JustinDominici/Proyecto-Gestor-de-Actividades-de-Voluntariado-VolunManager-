@@ -121,6 +121,20 @@ namespace VolunManager.Application.Service
                 return Fail<bool>("El ID del voluntario no es válido.");
             }
 
+            var voluntario = await _voluntarioRepository.GetByIdAsync(id);
+
+            if (voluntario == null)
+            {
+                return Fail<bool>("No se encontró el voluntario que desea eliminar.");
+            }
+
+            var tieneTareas = await _voluntarioRepository.TieneTareasAsociadasAsync(id);
+
+            if (tieneTareas)
+            {
+                return Fail<bool>("No se puede eliminar el voluntario porque tiene tareas asociadas.");
+            }
+
             var eliminado = await _voluntarioRepository.DeleteAsync(id);
 
             if (!eliminado)
