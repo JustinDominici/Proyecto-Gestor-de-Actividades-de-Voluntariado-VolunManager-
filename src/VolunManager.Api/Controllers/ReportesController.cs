@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using VolunManager.Api.Extensions;
 using VolunManager.Application.Contract;
 
 namespace VolunManager.Api.Controllers
@@ -30,12 +31,7 @@ namespace VolunManager.Api.Controllers
         {
             var result = await _reporteService.GenerarReporteHorasAsync(voluntarioId);
 
-            if (!result.Success)
-            {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+            return result.ToActionResult();
         }
 
         /// <summary>
@@ -55,12 +51,7 @@ namespace VolunManager.Api.Controllers
         {
             var result = await _reporteService.GenerarReporteHorasAsync(voluntarioId, fechaInicio, fechaFin);
 
-            if (!result.Success)
-            {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+            return result.ToActionResult();
         }
 
         /// <summary>
@@ -74,12 +65,7 @@ namespace VolunManager.Api.Controllers
         {
             var result = await _reporteService.GenerarReporteAsistenciaAsync(jornadaId);
 
-            if (!result.Success)
-            {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+            return result.ToActionResult();
         }
 
         /// <summary>
@@ -99,12 +85,7 @@ namespace VolunManager.Api.Controllers
         {
             var result = await _reporteService.GenerarReporteAsistenciaAsync(jornadaId, fechaInicio, fechaFin);
 
-            if (!result.Success)
-            {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+            return result.ToActionResult();
         }
     }
 }

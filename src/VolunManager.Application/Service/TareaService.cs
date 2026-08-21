@@ -35,7 +35,7 @@ namespace VolunManager.Application.Service
 
             if (tarea == null)
             {
-                return Fail<TareaDto>("No se encontró la tarea solicitada.");
+                return NotFound<TareaDto>("No se encontró la tarea solicitada.");
             }
 
             return Ok(MapToDto(tarea), "Tarea obtenida correctamente.");
@@ -92,7 +92,7 @@ namespace VolunManager.Application.Service
 
             if (tarea == null)
             {
-                return Fail<bool>("No se encontró la tarea que desea actualizar.");
+                return NotFound<bool>("No se encontró la tarea que desea actualizar.");
             }
 
             var jornadaExiste = await _tareaRepository.ExisteJornadaAsync(dto.JornadaId);
@@ -127,7 +127,7 @@ namespace VolunManager.Application.Service
 
             if (!eliminado)
             {
-                return Fail<bool>("No se encontró la tarea que desea eliminar.");
+                return NotFound<bool>("No se encontró la tarea que desea eliminar.");
             }
 
             return Ok(true, "Tarea eliminada correctamente.");

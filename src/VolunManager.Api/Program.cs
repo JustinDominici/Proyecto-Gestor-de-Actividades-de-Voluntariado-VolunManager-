@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
+using VolunManager.Api.ExceptionHandling;
 using VolunManager.Application.Contract;
 using VolunManager.Application.Service;
 using VolunManager.Domain.Interfaces;
@@ -7,6 +8,12 @@ using VolunManager.Infrastructure.Context;
 using VolunManager.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Middleware global de excepciones: atrapa cualquier error no controlado
+// (por ejemplo, una caida de la base de datos) y devuelve un 500 prolijo
+// en vez de un stack trace crudo.
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -50,6 +57,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+// Primero en el pipeline: si algo mas adelante explota, esto lo atrapa.
+app.UseExceptionHandler();
 
 if (app.Environment.IsDevelopment())
 {

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using VolunManager.Api.Extensions;
 using VolunManager.Application.Contract;
 using VolunManager.Application.Dtos.Roles;
 
@@ -20,12 +21,7 @@ namespace VolunManager.Api.Controllers
         {
             var result = await _rolService.GetAllAsync();
 
-            if (!result.Success)
-            {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+            return result.ToActionResult();
         }
 
         [HttpGet("{id}")]
@@ -33,12 +29,7 @@ namespace VolunManager.Api.Controllers
         {
             var result = await _rolService.GetByIdAsync(id);
 
-            if (!result.Success)
-            {
-                return NotFound(result);
-            }
-
-            return Ok(result);
+            return result.ToActionResult();
         }
 
         [HttpPost]
@@ -46,12 +37,7 @@ namespace VolunManager.Api.Controllers
         {
             var result = await _rolService.CreateAsync(rolCreateDto);
 
-            if (!result.Success)
-            {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+            return result.ToActionResult();
         }
 
         [HttpPut("{id}")]
@@ -59,35 +45,18 @@ namespace VolunManager.Api.Controllers
         {
             var result = await _rolService.UpdateAsync(id, rolUpdateDto);
 
-            if (!result.Success)
-            {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+            return result.ToActionResult();
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> EliminarRol(int id)
         {
-            // Se verifica primero si el rol existe (404) para poder distinguir
-            // ese caso del de "no se puede eliminar porque tiene voluntarios
-            // asociados" (400), que es un motivo de fallo distinto.
-            var existente = await _rolService.GetByIdAsync(id);
-
-            if (!existente.Success)
-            {
-                return NotFound(existente);
-            }
-
+            // Ya no hace falta el chequeo en dos pasos: DeleteAsync ahora
+            // devuelve el ErrorType correcto (NotFound o Conflict) segun
+            // el motivo del fallo, y ToActionResult() lo traduce solo.
             var result = await _rolService.DeleteAsync(id);
 
-            if (!result.Success)
-            {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+            return result.ToActionResult();
         }
     }
 }

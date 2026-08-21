@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using VolunManager.Api.Extensions;
 using VolunManager.Application.Contract;
 using VolunManager.Application.Dtos.Voluntarios;
 
@@ -20,12 +21,7 @@ namespace VolunManager.Api.Controllers
         {
             var result = await _voluntarioService.GetAllAsync();
 
-            if (!result.Success)
-            {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+            return result.ToActionResult();
         }
 
         [HttpGet("{id}")]
@@ -33,12 +29,7 @@ namespace VolunManager.Api.Controllers
         {
             var result = await _voluntarioService.GetByIdAsync(id);
 
-            if (!result.Success)
-            {
-                return NotFound(result);
-            }
-
-            return Ok(result);
+            return result.ToActionResult();
         }
 
         [HttpPost]
@@ -46,12 +37,7 @@ namespace VolunManager.Api.Controllers
         {
             var result = await _voluntarioService.CreateAsync(voluntarioCreateDto);
 
-            if (!result.Success)
-            {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+            return result.ToActionResult();
         }
 
         [HttpPut("{id}")]
@@ -59,35 +45,18 @@ namespace VolunManager.Api.Controllers
         {
             var result = await _voluntarioService.UpdateAsync(id, voluntarioUpdateDto);
 
-            if (!result.Success)
-            {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+            return result.ToActionResult();
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> EliminarVoluntario(int id)
         {
-            // Igual que en RolesController: se verifica primero si el voluntario
-            // existe (404) para distinguirlo del caso "no se puede eliminar
-            // porque tiene tareas asociadas" (400), que es otro motivo de fallo.
-            var existente = await _voluntarioService.GetByIdAsync(id);
-
-            if (!existente.Success)
-            {
-                return NotFound(existente);
-            }
-
+            // Ya no hace falta el chequeo en dos pasos: DeleteAsync ahora
+            // devuelve el ErrorType correcto (NotFound o Conflict) segun
+            // el motivo del fallo, y ToActionResult() lo traduce solo.
             var result = await _voluntarioService.DeleteAsync(id);
 
-            if (!result.Success)
-            {
-                return BadRequest(result);
-            }
-
-            return Ok(result);
+            return result.ToActionResult();
         }
     }
 }
