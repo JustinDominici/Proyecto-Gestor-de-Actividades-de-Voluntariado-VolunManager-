@@ -16,6 +16,12 @@ namespace VolunManager.Domain.Interfaces
 
         Task<bool> ExisteRolAsync(int rolId);
 
+        /// <summary>
+        /// Usado para proteger el borrado: no se puede eliminar un voluntario
+        /// que todavia tiene tareas asignadas.
+        /// </summary>
+        Task<bool> TieneTareasAsociadasAsync(int id);
+
         Task AddAsync(Voluntario voluntario);
 
         Task<bool> DeleteAsync(int id);
