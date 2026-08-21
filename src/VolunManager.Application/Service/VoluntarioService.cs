@@ -135,6 +135,13 @@ namespace VolunManager.Application.Service
                 return Fail<bool>("No se puede eliminar el voluntario porque tiene tareas asociadas.");
             }
 
+            var tieneAsistencias = await _voluntarioRepository.TieneAsistenciasAsociadasAsync(id);
+
+            if (tieneAsistencias)
+            {
+                return Fail<bool>("No se puede eliminar el voluntario porque tiene asistencias registradas.");
+            }
+
             var eliminado = await _voluntarioRepository.DeleteAsync(id);
 
             if (!eliminado)

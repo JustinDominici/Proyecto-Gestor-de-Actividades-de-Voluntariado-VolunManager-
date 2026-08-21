@@ -24,12 +24,14 @@ builder.Services.AddScoped<IVoluntarioRepository, VoluntarioRepository>();
 builder.Services.AddScoped<IJornadaRepository, JornadaRepository>();
 builder.Services.AddScoped<IRolRepository, RolRepository>();
 builder.Services.AddScoped<ITareaRepository, TareaRepository>();
+builder.Services.AddScoped<IAsistenciaRepository, AsistenciaRepository>();
 
 // Servicios de negocio
 builder.Services.AddScoped<IVoluntarioService, VoluntarioService>();
 builder.Services.AddScoped<IJornadaService, JornadaService>();
 builder.Services.AddScoped<IRolService, RolService>();
 builder.Services.AddScoped<ITareaService, TareaService>();
+builder.Services.AddScoped<IAsistenciaService, AsistenciaService>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
