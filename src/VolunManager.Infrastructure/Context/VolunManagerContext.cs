@@ -18,6 +18,8 @@ namespace VolunManager.Infrastructure.Context
 
         public DbSet<Tarea> Tareas { get; set; }
 
+        public DbSet<Asistencia> Asistencias { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Voluntario>()
@@ -56,6 +58,21 @@ namespace VolunManager.Infrastructure.Context
                 .Property(t => t.Estado)
                 .HasConversion<string>()
                 .HasMaxLength(20);
+
+            // Mismo criterio que con Tarea: cascada desde Jornada, restringida
+            // desde Voluntario (evita el conflicto de doble camino de cascada
+            // en SQL Server y protege registros de asistencia existentes).
+            modelBuilder.Entity<Jornada>()
+                .HasMany(j => j.Asistencias)
+                .WithOne(a => a.Jornada)
+                .HasForeignKey(a => a.JornadaId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Voluntario>()
+                .HasMany(v => v.Asistencias)
+                .WithOne(a => a.Voluntario)
+                .HasForeignKey(a => a.VoluntarioId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // Roles base del sistema. Se usa un objeto anonimo porque Rol
             // no tiene un constructor publico sin parametros ni setters
