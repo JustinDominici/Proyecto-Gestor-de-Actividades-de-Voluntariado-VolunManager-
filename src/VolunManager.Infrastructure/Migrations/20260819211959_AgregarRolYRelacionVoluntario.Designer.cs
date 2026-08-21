@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using VolunManager.Infrastructure.Context;
 
@@ -11,9 +12,11 @@ using VolunManager.Infrastructure.Context;
 namespace VolunManager.Infrastructure.Migrations
 {
     [DbContext(typeof(VolunManagerContext))]
-    partial class VolunManagerContextModelSnapshot : ModelSnapshot
+    [Migration("20260819211959_AgregarRolYRelacionVoluntario")]
+    partial class AgregarRolYRelacionVoluntario
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,38 +24,6 @@ namespace VolunManager.Infrastructure.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("VolunManager.Domain.Entities.Asistencia", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("HoraEntrada")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("HoraSalida")
-                        .HasColumnType("datetime2");
-
-                    b.Property<double>("HorasTrabajadas")
-                        .HasColumnType("float");
-
-                    b.Property<int>("JornadaId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("VoluntarioId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("JornadaId");
-
-                    b.HasIndex("VoluntarioId");
-
-                    b.ToTable("Asistencias");
-                });
 
             modelBuilder.Entity("VolunManager.Domain.Entities.Jornada", b =>
                 {
@@ -131,48 +102,6 @@ namespace VolunManager.Infrastructure.Migrations
                         });
                 });
 
-            modelBuilder.Entity("VolunManager.Domain.Entities.Tarea", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Descripcion")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Estado")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<DateTime>("FechaAsignacion")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("FechaCompletada")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("JornadaId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Titulo")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("VoluntarioId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("JornadaId");
-
-                    b.HasIndex("VoluntarioId");
-
-                    b.ToTable("Tareas");
-                });
-
             modelBuilder.Entity("VolunManager.Domain.Entities.Voluntario", b =>
                 {
                     b.Property<int>("Id")
@@ -210,25 +139,6 @@ namespace VolunManager.Infrastructure.Migrations
                     b.ToTable("Voluntarios");
                 });
 
-            modelBuilder.Entity("VolunManager.Domain.Entities.Asistencia", b =>
-                {
-                    b.HasOne("VolunManager.Domain.Entities.Jornada", "Jornada")
-                        .WithMany("Asistencias")
-                        .HasForeignKey("JornadaId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("VolunManager.Domain.Entities.Voluntario", "Voluntario")
-                        .WithMany("Asistencias")
-                        .HasForeignKey("VoluntarioId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Jornada");
-
-                    b.Navigation("Voluntario");
-                });
-
             modelBuilder.Entity("VolunManager.Domain.Entities.Jornada", b =>
                 {
                     b.HasOne("VolunManager.Domain.Entities.Voluntario", "Voluntario")
@@ -236,25 +146,6 @@ namespace VolunManager.Infrastructure.Migrations
                         .HasForeignKey("VoluntarioId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Voluntario");
-                });
-
-            modelBuilder.Entity("VolunManager.Domain.Entities.Tarea", b =>
-                {
-                    b.HasOne("VolunManager.Domain.Entities.Jornada", "Jornada")
-                        .WithMany("Tareas")
-                        .HasForeignKey("JornadaId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("VolunManager.Domain.Entities.Voluntario", "Voluntario")
-                        .WithMany("Tareas")
-                        .HasForeignKey("VoluntarioId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Jornada");
 
                     b.Navigation("Voluntario");
                 });
@@ -270,13 +161,6 @@ namespace VolunManager.Infrastructure.Migrations
                     b.Navigation("Rol");
                 });
 
-            modelBuilder.Entity("VolunManager.Domain.Entities.Jornada", b =>
-                {
-                    b.Navigation("Asistencias");
-
-                    b.Navigation("Tareas");
-                });
-
             modelBuilder.Entity("VolunManager.Domain.Entities.Rol", b =>
                 {
                     b.Navigation("Voluntarios");
@@ -284,11 +168,7 @@ namespace VolunManager.Infrastructure.Migrations
 
             modelBuilder.Entity("VolunManager.Domain.Entities.Voluntario", b =>
                 {
-                    b.Navigation("Asistencias");
-
                     b.Navigation("Jornadas");
-
-                    b.Navigation("Tareas");
                 });
 #pragma warning restore 612, 618
         }
