@@ -1,27 +1,79 @@
 @page "/voluntarios"
 @inject ApiClient Api
 <PageTitle>Voluntarios</PageTitle>
-<div class="page-header"><div><p class="eyebrow">Cliente distribuido</p><h1>Voluntarios</h1><p>Datos obtenidos directamente desde VolunManager.Api.</p></div><button class="button primary" @onclick="Cargar">Actualizar</button></div>
-@if (cargando) { <p class="status">Cargando...</p> }
-else if (!string.IsNullOrWhiteSpace(error)) { <div class="alert error">@error</div> }
-else if (items.Count == 0) { <div class="empty">No hay voluntarios registrados.</div> }
+
+<div class="page-header">
+    <div>
+        <p class="eyebrow">Cliente distribuido</p>
+        <h1>Voluntarios</h1>
+        <p>Datos obtenidos directamente desde VolunManager.Api.</p>
+    </div>
+    <button class="button primary" @onclick="Cargar">Actualizar</button>
+</div>
+
+<div class="form-card" style="margin-bottom: 2rem;">
+    <h2>Agregar Voluntario</h2>
+    <div class="form-row">
+        <div><label>Nombre</label><input type="text" @bind="nuevo.Nombre" /></div>
+        <div><label>Apellido</label><input type="text" @bind="nuevo.Apellido" /></div>
+        <div><label>Correo</label><input type="email" @bind="nuevo.Correo" /></div>
+    </div>
+    <div class="form-row">
+        <div><label>Teléfono</label><input type="text" @bind="nuevo.Telefono" /></div>
+        <div><label>Rol ID (1=Vol, 2=Coord, 3=Admin)</label><input type="number" @bind="nuevo.RolId" min="1" max="3" /></div>
+    </div>
+    <button class="button primary" style="margin-top: 1rem;" @onclick="Crear">Guardar Voluntario</button>
+</div>
+
+@if (cargando)
+{
+    <p class="status">Cargando...</p>
+}
+else if (!string.IsNullOrWhiteSpace(error))
+{
+
+    <div class="alert error">@error</div>
+}
+else if (items.Count == 0)
+{
+
+    <div class="empty">No hay voluntarios registrados.</div>
+}
 else
 {
-    <div class="table-card"><table>
-        <thead><tr><th>ID</th><th>Nombre</th><th>Correo</th><th>Teléfono</th><th>Rol</th><th>Estado</th></tr></thead>
-        <tbody>
-        @foreach (var item in items)
-        {
-            <tr><td>@item.Id</td><td>@item.Nombre @item.Apellido</td><td>@item.Correo</td><td>@item.Telefono</td><td>@(item.NombreRol ?? "Sin rol")</td><td>@(item.Activo ? "Activo" : "Inactivo")</td></tr>
-        }
-        </tbody>
-    </table></div>
+    <div class="table-card">
+        <table>
+            <thead>
+                <tr><th>ID</th><th>Nombre</th><th>Correo</th><th>Teléfono</th><th>Rol</th><th>Estado</th><th>Acción</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var item in items)
+                {
+                    <tr>
+                        <td>@item.Id</td>
+                        <td>@item.Nombre @item.Apellido</td>
+                        <td>@item.Correo</td>
+                        <td>@item.Telefono</td>
+                        <td>@(item.NombreRol ?? "Sin rol")</td>
+                        <td>@(item.Activo ? "Activo" : "Inactivo")</td>
+                        <td><button class="button secondary" style="color: red; border-color: red;" @onclick="() => Eliminar(item.Id)">Eliminar</button></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 }
+
 @code {
     private List<VoluntarioDto> items = [];
     private bool cargando = true;
     private string? error;
+
+    // Objeto temporal para el formulario
+    private NuevoVoluntario nuevo = new NuevoVoluntario { RolId = 1 };
+
     protected override async Task OnInitializedAsync() => await Cargar();
+
     private async Task Cargar()
     {
         cargando = true; error = null;
@@ -29,5 +81,35 @@ else
         if (!result.Success) error = result.Message;
         else items = result.Data ?? [];
         cargando = false;
+    }
+
+    private async Task Crear()
+    {
+        if (string.IsNullOrWhiteSpace(nuevo.Nombre) || string.IsNullOrWhiteSpace(nuevo.Correo))
+        {
+            error = "Nombre y Correo son obligatorios."; return;
+        }
+        error = null; cargando = true;
+        var result = await Api.CrearVoluntarioAsync(nuevo);
+        if (!result.Success) { error = result.Message; cargando = false; }
+        else { nuevo = new NuevoVoluntario { RolId = 1 }; await Cargar(); }
+    }
+
+    private async Task Eliminar(int id)
+    {
+        error = null; cargando = true;
+        var result = await Api.EliminarVoluntarioAsync(id);
+        if (!result.Success) { error = result.Message; cargando = false; }
+        else await Cargar();
+    }
+
+    // Clase interna para no ensuciar tus modelos
+    private class NuevoVoluntario
+    {
+        public string Nombre { get; set; } = "";
+        public string Apellido { get; set; } = "";
+        public string Correo { get; set; } = "";
+        public string Telefono { get; set; } = "";
+        public int RolId { get; set; }
     }
 }
