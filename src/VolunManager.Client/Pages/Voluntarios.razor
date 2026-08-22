@@ -1,0 +1,33 @@
+@page "/voluntarios"
+@inject ApiClient Api
+<PageTitle>Voluntarios</PageTitle>
+<div class="page-header"><div><p class="eyebrow">Cliente distribuido</p><h1>Voluntarios</h1><p>Datos obtenidos directamente desde VolunManager.Api.</p></div><button class="button primary" @onclick="Cargar">Actualizar</button></div>
+@if (cargando) { <p class="status">Cargando...</p> }
+else if (!string.IsNullOrWhiteSpace(error)) { <div class="alert error">@error</div> }
+else if (items.Count == 0) { <div class="empty">No hay voluntarios registrados.</div> }
+else
+{
+    <div class="table-card"><table>
+        <thead><tr><th>ID</th><th>Nombre</th><th>Correo</th><th>Teléfono</th><th>Rol</th><th>Estado</th></tr></thead>
+        <tbody>
+        @foreach (var item in items)
+        {
+            <tr><td>@item.Id</td><td>@item.Nombre @item.Apellido</td><td>@item.Correo</td><td>@item.Telefono</td><td>@(item.NombreRol ?? "Sin rol")</td><td>@(item.Activo ? "Activo" : "Inactivo")</td></tr>
+        }
+        </tbody>
+    </table></div>
+}
+@code {
+    private List<VoluntarioDto> items = [];
+    private bool cargando = true;
+    private string? error;
+    protected override async Task OnInitializedAsync() => await Cargar();
+    private async Task Cargar()
+    {
+        cargando = true; error = null;
+        var result = await Api.GetVoluntariosAsync();
+        if (!result.Success) error = result.Message;
+        else items = result.Data ?? [];
+        cargando = false;
+    }
+}
