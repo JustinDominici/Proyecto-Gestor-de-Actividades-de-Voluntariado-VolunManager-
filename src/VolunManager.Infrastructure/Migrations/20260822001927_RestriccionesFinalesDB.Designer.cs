@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using VolunManager.Infrastructure.Context;
 
@@ -11,9 +12,11 @@ using VolunManager.Infrastructure.Context;
 namespace VolunManager.Infrastructure.Migrations
 {
     [DbContext(typeof(VolunManagerContext))]
-    partial class VolunManagerContextModelSnapshot : ModelSnapshot
+    [Migration("20260822001927_RestriccionesFinalesDB")]
+    partial class RestriccionesFinalesDB
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
