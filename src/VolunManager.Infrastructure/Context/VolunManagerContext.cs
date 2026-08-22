@@ -22,6 +22,36 @@ namespace VolunManager.Infrastructure.Context
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // --------------------------------------------------------
+            // 1. RESTRICCIONES DE CAMPOS E ÍNDICES ÚNICOS
+            // --------------------------------------------------------
+
+            modelBuilder.Entity<Voluntario>()
+                .HasIndex(v => v.Correo)
+                .IsUnique();
+            modelBuilder.Entity<Voluntario>().Property(v => v.Nombre).HasMaxLength(100).IsRequired();
+            modelBuilder.Entity<Voluntario>().Property(v => v.Apellido).HasMaxLength(100).IsRequired();
+            modelBuilder.Entity<Voluntario>().Property(v => v.Correo).HasMaxLength(150).IsRequired();
+            modelBuilder.Entity<Voluntario>().Property(v => v.Telefono).HasMaxLength(20);
+
+            modelBuilder.Entity<Rol>()
+                .HasIndex(r => r.Nombre)
+                .IsUnique();
+            modelBuilder.Entity<Rol>().Property(r => r.Nombre).HasMaxLength(50).IsRequired();
+            modelBuilder.Entity<Rol>().Property(r => r.Descripcion).HasMaxLength(250);
+
+            modelBuilder.Entity<Jornada>().Property(j => j.Titulo).HasMaxLength(150).IsRequired();
+            modelBuilder.Entity<Jornada>().Property(j => j.Descripcion).HasMaxLength(500);
+            modelBuilder.Entity<Jornada>().Property(j => j.Lugar).HasMaxLength(200);
+
+            modelBuilder.Entity<Tarea>().Property(t => t.Titulo).HasMaxLength(150).IsRequired();
+            modelBuilder.Entity<Tarea>().Property(t => t.Descripcion).HasMaxLength(500);
+
+
+            // --------------------------------------------------------
+            // 2. RELACIONES Y REGLAS DE BORRADO (Tus configuraciones originales)
+            // --------------------------------------------------------
+
             modelBuilder.Entity<Voluntario>()
                 .HasMany(v => v.Jornadas)
                 .WithOne(j => j.Voluntario)
@@ -73,6 +103,11 @@ namespace VolunManager.Infrastructure.Context
                 .WithOne(a => a.Voluntario)
                 .HasForeignKey(a => a.VoluntarioId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+
+            // --------------------------------------------------------
+            // 3. SEMILLAS (SEED DATA)
+            // --------------------------------------------------------
 
             // Roles base del sistema. Se usa un objeto anonimo porque Rol
             // no tiene un constructor publico sin parametros ni setters
