@@ -1,0 +1,56 @@
+@page "/reportes"
+@inject ApiClient Api
+<PageTitle>Reportes</PageTitle>
+<div class="page-header"><div><p class="eyebrow">POO — Sobrecarga</p><h1>Reportes</h1><p>Las opciones con rango usan la sobrecarga de los métodos del servicio.</p></div></div>
+<section class="report-grid">
+    <article class="form-card">
+        <h2>Horas por voluntario</h2>
+        <label>ID</label><input type="number" min="1" @bind="voluntarioId" />
+        <div class="form-row"><div><label>Desde</label><input type="date" @bind="inicioVol" /></div><div><label>Hasta</label><input type="date" @bind="finVol" /></div></div>
+        <button class="button primary" @onclick="Horas">Generar reporte</button>
+        @if (horas is not null) { <div class="report-summary"><strong>@horas.NombreVoluntario @horas.ApellidoVoluntario</strong><span>Total: @horas.TotalHorasTrabajadas.ToString("0.##") horas</span><span>Jornadas: @horas.CantidadJornadasRealizadas</span><span>Promedio: @horas.PromedioHorasPorJornada.ToString("0.##")</span></div> }
+    </article>
+    <article class="form-card">
+        <h2>Asistencia por jornada</h2>
+        <label>ID</label><input type="number" min="1" @bind="jornadaId" />
+        <div class="form-row"><div><label>Desde</label><input type="date" @bind="inicioJornada" /></div><div><label>Hasta</label><input type="date" @bind="finJornada" /></div></div>
+        <button class="button primary" @onclick="Asistencia">Generar reporte</button>
+        @if (asistencia is not null) { <div class="report-summary"><strong>@asistencia.TituloJornada</strong><span>Participantes: @asistencia.TotalVoluntariosParticipantes</span><span>Total: @asistencia.TotalHorasTrabajadas.ToString("0.##") horas</span></div> }
+    </article>
+</section>
+@if (!string.IsNullOrWhiteSpace(error)) { <div class="alert error">@error</div> }
+@if (horas is not null)
+{
+    <div class="table-card"><h2>Detalle de horas</h2><table><thead><tr><th>Jornada</th><th>Fecha</th><th>Horas</th></tr></thead><tbody>
+    @foreach (var item in horas.DetallesJornadas) { <tr><td>@item.TituloJornada</td><td>@item.FechaJornada.ToString("dd/MM/yyyy")</td><td>@item.HorasTrabajadas.ToString("0.##")</td></tr> }
+    </tbody></table></div>
+}
+@if (asistencia is not null)
+{
+    <div class="table-card"><h2>Detalle de asistencia</h2><table><thead><tr><th>Voluntario</th><th>Entrada</th><th>Salida</th><th>Horas</th></tr></thead><tbody>
+    @foreach (var item in asistencia.DetallesVoluntarios) { <tr><td>@item.NombreVoluntario @item.ApellidoVoluntario</td><td>@item.HoraEntrada.ToString("dd/MM/yyyy HH:mm")</td><td>@(item.HoraSalida?.ToString("dd/MM/yyyy HH:mm") ?? "Pendiente")</td><td>@item.HorasTrabajadas.ToString("0.##")</td></tr> }
+    </tbody></table></div>
+}
+@code {
+    private int voluntarioId = 1, jornadaId = 1;
+    private DateTime? inicioVol, finVol, inicioJornada, finJornada;
+    private ReporteHorasDto? horas;
+    private ReporteAsistenciaDto? asistencia;
+    private string? error;
+    private async Task Horas()
+    {
+        error = null; horas = null;
+        ServiceResult<ReporteHorasDto> r = inicioVol.HasValue && finVol.HasValue
+            ? await Api.GetReporteHorasAsync(voluntarioId, inicioVol.Value, finVol.Value)
+            : await Api.GetReporteHorasAsync(voluntarioId);
+        if (!r.Success) error = r.Message; else horas = r.Data;
+    }
+    private async Task Asistencia()
+    {
+        error = null; asistencia = null;
+        ServiceResult<ReporteAsistenciaDto> r = inicioJornada.HasValue && finJornada.HasValue
+            ? await Api.GetReporteAsistenciaAsync(jornadaId, inicioJornada.Value, finJornada.Value)
+            : await Api.GetReporteAsistenciaAsync(jornadaId);
+        if (!r.Success) error = r.Message; else asistencia = r.Data;
+    }
+}

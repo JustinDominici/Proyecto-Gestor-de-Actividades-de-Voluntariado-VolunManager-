@@ -1,0 +1,33 @@
+@page "/jornadas"
+@inject ApiClient Api
+<PageTitle>Jornadas</PageTitle>
+<div class="page-header"><div><p class="eyebrow">Cliente distribuido</p><h1>Jornadas</h1><p>Listado obtenido desde VolunManager.Api.</p></div><button class="button primary" @onclick="Cargar">Actualizar</button></div>
+@if (cargando) { <p class="status">Cargando...</p> }
+else if (!string.IsNullOrWhiteSpace(error)) { <div class="alert error">@error</div> }
+else if (items.Count == 0) { <div class="empty">No hay jornadas registradas.</div> }
+else
+{
+    <div class="table-card"><table>
+        <thead><tr><th>ID</th><th>Título</th><th>Fecha</th><th>Lugar</th><th>Horas</th><th>Voluntario</th></tr></thead>
+        <tbody>
+        @foreach (var item in items)
+        {
+            <tr><td>@item.Id</td><td>@item.Titulo</td><td>@item.Fecha.ToString("dd/MM/yyyy")</td><td>@item.Lugar</td><td>@item.HorasEstimadas</td><td>@(item.NombreVoluntario ?? "Sin nombre")</td></tr>
+        }
+        </tbody>
+    </table></div>
+}
+@code {
+    private List<JornadaDto> items = [];
+    private bool cargando = true;
+    private string? error;
+    protected override async Task OnInitializedAsync() => await Cargar();
+    private async Task Cargar()
+    {
+        cargando = true; error = null;
+        var result = await Api.GetJornadasAsync();
+        if (!result.Success) error = result.Message;
+        else items = result.Data ?? [];
+        cargando = false;
+    }
+}
