@@ -48,12 +48,6 @@ Registra la asistencia de los voluntarios a las jornadas, incluyendo hora de ent
 
 
 
-\### ReportesHoras
-
-Permite almacenar reportes de horas acumuladas por voluntario.
-
-
-
 \## Relaciones principales
 
 
@@ -68,7 +62,6 @@ Permite almacenar reportes de horas acumuladas por voluntario.
 
 \- Una jornada puede tener muchos registros de asistencia.
 
-\- Un voluntario puede tener reportes de horas generados.
 
 
 
