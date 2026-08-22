@@ -63,12 +63,3 @@ CREATE TABLE Asistencias (
         FOREIGN KEY (JornadaId) REFERENCES Jornadas(Id)
 );
 
-CREATE TABLE ReportesHoras (
-    Id INT PRIMARY KEY IDENTITY(1,1),
-    VoluntarioId INT NOT NULL,
-    TotalHoras DECIMAL(6,2) NOT NULL DEFAULT 0,
-    FechaGeneracion DATETIME NOT NULL DEFAULT GETDATE(),
-
-    CONSTRAINT FK_ReportesHoras_Voluntarios
-        FOREIGN KEY (VoluntarioId) REFERENCES Voluntarios(Id)
-);
